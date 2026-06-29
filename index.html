@@ -1,0 +1,282 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+#app{max-width:420px;margin:0 auto;padding:1rem;min-height:600px}
+.screen{display:none}
+.screen.active{display:block}
+.hdr{background:var(--bg-accent);border:0.5px solid var(--border-accent);border-radius:12px;padding:1rem;margin-bottom:1rem}
+.hdr h2{font-size:15px;font-weight:500;color:var(--text-accent)}
+.hdr p{font-size:13px;color:var(--text-secondary);margin-top:4px}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem}
+.stat{background:var(--surface-1);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;text-align:center}
+.stat-val{font-size:20px;font-weight:500;color:var(--text-primary)}
+.stat-lbl{font-size:11px;color:var(--text-muted);margin-top:2px}
+.day-hdr{font-size:13px;color:var(--text-secondary);margin-bottom:10px}
+.situation{background:var(--surface-2);border:0.5px solid var(--border-strong);border-radius:12px;padding:1rem;margin-bottom:1rem}
+.situation p{font-size:14px;color:var(--text-primary);line-height:1.6}
+.situation .tag{display:inline-block;font-size:11px;background:var(--bg-warning);color:var(--text-warning);padding:2px 8px;border-radius:var(--radius);margin-bottom:8px}
+.choices{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.choice{background:var(--surface-2);border:0.5px solid var(--border-strong);border-radius:var(--radius);padding:12px 14px;cursor:pointer;font-size:14px;color:var(--text-primary);text-align:left;transition:background 0.15s}
+.choice:hover{background:var(--surface-1);border-color:var(--border-accent)}
+.choice .desc{font-size:12px;color:var(--text-muted);margin-top:3px}
+.result-card{border-radius:12px;padding:1rem;margin-bottom:1rem}
+.result-card.good{background:var(--bg-success);border:0.5px solid var(--border-success)}
+.result-card.bad{background:var(--bg-danger);border:0.5px solid var(--border-danger)}
+.result-card.neutral{background:var(--bg-warning);border:0.5px solid var(--border-warning)}
+.result-card p{font-size:14px;line-height:1.6}
+.result-card.good p{color:var(--text-success)}
+.result-card.bad p{color:var(--text-danger)}
+.result-card.neutral p{color:var(--text-warning)}
+.delta{font-size:12px;margin-top:6px;font-weight:500}
+.btn-next{width:100%;padding:12px;background:var(--bg-accent);border:0.5px solid var(--border-accent);border-radius:var(--radius);color:var(--text-accent);font-size:14px;font-weight:500;cursor:pointer;margin-top:4px}
+.btn-next:hover{background:var(--fill-accent);color:var(--on-accent)}
+.btn-start{width:100%;padding:14px;background:var(--fill-accent);border:none;border-radius:var(--radius);color:var(--on-accent);font-size:15px;font-weight:500;cursor:pointer;margin-top:1rem}
+.end-card{background:var(--surface-1);border:0.5px solid var(--border);border-radius:12px;padding:1.5rem;text-align:center}
+.end-card h3{font-size:18px;font-weight:500;color:var(--text-primary);margin-bottom:8px}
+.end-card p{font-size:14px;color:var(--text-secondary);line-height:1.6}
+.end-score{font-size:40px;font-weight:500;color:var(--text-accent);margin:1rem 0}
+.progress{height:4px;background:var(--border);border-radius:2px;margin-bottom:1rem;overflow:hidden}
+.progress-fill{height:100%;background:var(--fill-accent);border-radius:2px;transition:width 0.4s}
+.badge{font-size:12px;background:var(--bg-success);color:var(--text-success);padding:4px 10px;border-radius:var(--radius);display:inline-block;margin-top:8px}
+</style>
+
+<div id="app">
+<h2 class="sr-only">Симулятор SMM-менеджера НКО по профилактике ВИЧ</h2>
+
+<div class="screen active" id="s-start">
+  <div style="text-align:center;padding:2rem 0 1rem">
+    <div style="font-size:48px;margin-bottom:12px">📱</div>
+    <h1 style="font-size:22px;font-weight:500;color:var(--text-primary);margin-bottom:8px">Позитивный SMM</h1>
+    <p style="font-size:14px;color:var(--text-secondary);line-height:1.7">Ты — SMM-менеджер НКО «ТестируйСя».<br>Твоя задача: вести Telegram-канал и привлечь людей на бесплатное тестирование на ВИЧ.</p>
+    <p style="font-size:13px;color:var(--text-muted);margin-top:12px">7 рабочих дней. Каждое решение влияет на охват, доверие и запись на тест.</p>
+    <button class="btn-start" onclick="startGame()">Начать работу</button>
+  </div>
+</div>
+
+<div class="screen" id="s-game">
+  <div class="hdr">
+    <h2 id="g-title">День 1</h2>
+    <p id="g-subtitle">Понедельник</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="s-subs">1 240</div><div class="stat-lbl">подписчиков</div></div>
+    <div class="stat"><div class="stat-val" id="s-trust">50</div><div class="stat-lbl">репутация</div></div>
+    <div class="stat"><div class="stat-val" id="s-tests">0</div><div class="stat-lbl">записей</div></div>
+  </div>
+  <div class="progress"><div class="progress-fill" id="prog" style="width:14%"></div></div>
+  <div class="day-hdr" id="g-phase">Выбери действие на сегодня</div>
+  <div class="situation" id="g-situation"></div>
+  <div class="choices" id="g-choices"></div>
+</div>
+
+<div class="screen" id="s-result">
+  <div class="hdr">
+    <h2 id="r-title">Результат</h2>
+    <p id="r-sub"></p>
+  </div>
+  <div id="r-card"></div>
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="rs-subs"></div><div class="stat-lbl">подписчиков</div></div>
+    <div class="stat"><div class="stat-val" id="rs-trust"></div><div class="stat-lbl">репутация</div></div>
+    <div class="stat"><div class="stat-val" id="rs-tests"></div><div class="stat-lbl">записей</div></div>
+  </div>
+  <button class="btn-next" id="btn-next" onclick="nextDay()">Следующий день →</button>
+</div>
+
+<div class="screen" id="s-end">
+  <div class="end-card">
+    <div style="font-size:48px;margin-bottom:12px" id="end-emoji">🎉</div>
+    <h3 id="end-title"></h3>
+    <div class="end-score" id="end-score"></div>
+    <p id="end-text"></p>
+    <div id="end-badge"></div>
+    <button class="btn-start" onclick="restartGame()" style="margin-top:1.5rem">Сыграть снова</button>
+    <button class="btn-next" onclick="sendPrompt('Хочу добавить больше дней и событий в игру про SMM НКО')" style="margin-top:8px">Расширить игру ↗</button>
+  </div>
+</div>
+</div>
+
+<script>
+const DAYS = [
+  {
+    day:1, title:"День 1 — Понедельник", subtitle:"Начало недели",
+    tag:"Контент",
+    situation:"Нужно сделать первый пост на неделю. Канал молодой, аудитория смешанная — есть и те, кто сам в группе риска, и случайные подписчики.",
+    choices:[
+      {text:"Личная история волонтёра", desc:"Эмоционально, но требует доверия к герою", subs:+80, trust:+12, tests:+3, result:"good", msg:"История набрала 340 просмотров и 28 репостов. Люди пишут в личку — спрашивают про тест.", delta:"+ 80 подписчиков · +12 к репутации · +3 записи"},
+      {text:"Статистика по региону", desc:"Авторитетно, но может пугать", subs:+20, trust:+6, tests:+1, result:"neutral", msg:"Пост посмотрели 180 человек. Комментарий: «Страшная цифра, спасибо что пишете». Один человек записался на тест.", delta:"+ 20 подписчиков · +6 к репутации · +1 запись"},
+      {text:"Мем про анализы", desc:"Охватно, но теряем серьёзность", subs:+120, trust:-5, tests:+1, result:"neutral", msg:"Мем разлетелся — +120 подписчиков. Но старая аудитория недовольна: «Это же не смешно». Репутация немного упала.", delta:"+ 120 подписчиков · −5 к репутации · +1 запись"},
+    ]
+  },
+  {
+    day:2, title:"День 2 — Вторник", subtitle:"Кризис в комментариях",
+    tag:"Кризис",
+    situation:"В канале появился агрессивный комментарий: «ВИЧ — это наказание, незачем помогать таким людям». Пост висит, аудитория молчит и ждёт реакции.",
+    choices:[
+      {text:"Написать взвешенный ответ с фактами", desc:"Занимает время, но демонстрирует позицию", subs:+40, trust:+15, tests:+2, result:"good", msg:"Ответ поддержали 60+ реакциями. Несколько человек написали: «Спасибо что не промолчали». Это привлекло новых подписчиков.", delta:"+ 40 подписчиков · +15 к репутации · +2 записи"},
+      {text:"Удалить комментарий и не реагировать", desc:"Быстро, но выглядит как цензура", subs:-10, trust:-8, tests:0, result:"bad", msg:"Подписчики заметили. В личке вопросы: «Почему удалили?». Один канал написал, что вы «боитесь дискуссии».", delta:"− 10 подписчиков · −8 к репутации"},
+      {text:"Сделать отдельный пост про стигму", desc:"Долгосрочно полезно, но нужно время", subs:+60, trust:+10, tests:+1, result:"good", msg:"Пост про стигму стал самым популярным за месяц. Его репостнули три других канала.", delta:"+ 60 подписчиков · +10 к репутации · +1 запись"},
+    ]
+  },
+  {
+    day:3, title:"День 3 — Среда", subtitle:"Партнёрское предложение",
+    tag:"Партнёрство",
+    situation:"Пришло предложение от крупного блогера (130к подписчиков): сделать совместный пост. Но его аудитория — развлекательная, и он хочет «облегчить» тему.",
+    choices:[
+      {text:"Согласиться, но сохранить суть", desc:"Компромисс — вы редактируете текст вместе", subs:+200, trust:+5, tests:+8, result:"good", msg:"Пост вышел у блогера. Пришло 200 новых подписчиков и 8 записей на тест — люди спрашивают где тестироваться.", delta:"+ 200 подписчиков · +5 к репутации · +8 записей"},
+      {text:"Отказать — не хотим размывать тему", desc:"Принципиально, но теряем охват", subs:0, trust:+8, tests:0, result:"neutral", msg:"Отказали вежливо. Репутация в профессиональном сообществе выросла — про вас написали как о канале «без компромиссов».", delta:"+8 к репутации · охват не изменился"},
+      {text:"Согласиться на условиях блогера", desc:"Максимальный охват, но теряете стиль", subs:+300, trust:-15, tests:+3, result:"bad", msg:"Охват взлетел, но старые подписчики недовольны. Несколько отписок с комментарием «это уже не тот канал».", delta:"+ 300 подписчиков · −15 к репутации · +3 записи"},
+    ]
+  },
+  {
+    day:4, title:"День 4 — Четверг", subtitle:"Опрос аудитории",
+    tag:"Вовлечённость",
+    situation:"Аудитория растёт, но вовлечённость падает. Люди читают, но не реагируют. Нужно что-то изменить.",
+    choices:[
+      {text:"Запустить анонимный опрос про страхи", desc:"«Что мешает вам сдать тест?»", subs:+30, trust:+18, tests:+5, result:"good", msg:"Опрос прошли 340 человек. Топ ответ: «Боюсь результата». Вы сделали серию постов-ответов — доверие выросло.", delta:"+ 30 подписчиков · +18 к репутации · +5 записей"},
+      {text:"Запустить челлендж «Иду на тест»", desc:"Вирально, но требует смелости от участников", subs:+90, trust:+8, tests:+12, result:"good", msg:"Восемь человек поделились своим опытом публично. Канал впервые попал в раздел «Рекомендуемые».", delta:"+ 90 подписчиков · +8 к репутации · +12 записей"},
+      {text:"Купить рекламу у bot-каналов", desc:"Дёшево, но аудитория нецелевая", subs:+150, trust:-10, tests:0, result:"bad", msg:"Пришли боты и нецелевые аккаунты. Охват вырос, но вовлечённость упала до минимума. Telegram понизил канал в поиске.", delta:"+ 150 подписчиков (нецелевые) · −10 к репутации"},
+    ]
+  },
+  {
+    day:5, title:"День 5 — Пятница", subtitle:"Медиазапрос",
+    tag:"СМИ",
+    situation:"Журналист крупного издания просит комментарий про ВИЧ-статистику в городе. Хочет процитировать канал как источник.",
+    choices:[
+      {text:"Дать комментарий с проверенными данными", desc:"Ссылаетесь только на официальную статистику", subs:+70, trust:+20, tests:+6, result:"good", msg:"Статья вышла. Канал упомянули как «достоверный источник». +70 подписчиков за день и звонок от партнёрской клиники.", delta:"+ 70 подписчиков · +20 к репутации · +6 записей"},
+      {text:"Отказать — нет времени", desc:"Безопасно, но упускаем возможность", subs:0, trust:0, tests:0, result:"neutral", msg:"Журналист нашёл другой источник. Статья вышла без вас. Упущенная возможность.", delta:"Без изменений"},
+      {text:"Дать комментарий, преувеличив данные для эффекта", desc:"Привлечёт внимание, но рискованно", subs:+50, trust:-20, tests:+2, result:"bad", msg:"Другие НКО указали на ошибки в цифрах. Репутация пострадала — подписчики сомневаются в достоверности канала.", delta:"+ 50 подписчиков · −20 к репутации · +2 записи"},
+    ]
+  },
+  {
+    day:6, title:"День 6 — Суббота", subtitle:"Выходной день",
+    tag:"Команда",
+    situation:"Суббота. У волонтёров выходной, но в канале активность — люди задают вопросы про тест. Как поступишь?",
+    choices:[
+      {text:"Подготовить автоответы и FAQ заранее", desc:"Бот отвечает на типовые вопросы", subs:+20, trust:+10, tests:+8, result:"good", msg:"Бот ответил на 34 вопроса. 8 человек записались на тест прямо в субботу. Команда отдохнула.", delta:"+ 20 подписчиков · +10 к репутации · +8 записей"},
+      {text:"Ответить лично на всё сам(а)", desc:"Максимальная забота, но выгораешь", subs:+10, trust:+15, tests:+5, result:"neutral", msg:"Люди получили личные ответы и оценили. Но ты потратил(а) весь выходной. К понедельнику — ощущение усталости.", delta:"+ 10 подписчиков · +15 к репутации · +5 записей (и усталость)"},
+      {text:"Закрыть комментарии на выходные", desc:"Команда отдыхает, но аудитория в ожидании", subs:-15, trust:-5, tests:0, result:"bad", msg:"Несколько человек написали что «канал мёртвый» и отписались. Воскресенье прошло спокойно, но понедельник — с потерями.", delta:"− 15 подписчиков · −5 к репутации"},
+    ]
+  },
+  {
+    day:7, title:"День 7 — Итог недели", subtitle:"Финальный выбор",
+    tag:"Стратегия",
+    situation:"Конец первой недели. Руководство НКО спрашивает: как будем расти дальше? Нужно предложить стратегию на следующий месяц.",
+    choices:[
+      {text:"Фокус на доверие: меньше, но глубже", desc:"Качественный контент, живое комьюнити", subs:+50, trust:+25, tests:+15, result:"good", msg:"Команда одобрила. Контент-план на месяц построен вокруг историй и экспертов. Вы чувствуете, что делаете настоящее дело.", delta:"+ 50 подписчиков · +25 к репутации · +15 записей"},
+      {text:"Фокус на охват: вирал и коллаборации", desc:"Быстрый рост, но менее лояльная аудитория", subs:+180, trust:+5, tests:+10, result:"neutral", msg:"Быстрый рост — но комьюнити ощущается менее живым. Записей на тест меньше, чем ожидалось.", delta:"+ 180 подписчиков · +5 к репутации · +10 записей"},
+      {text:"Запустить образовательный курс в канале", desc:"Серия постов — «всё о ВИЧ за 10 дней»", subs:+80, trust:+30, tests:+20, result:"good", msg:"Курс стал главным активом канала. Его репостят медики и школьные психологи. +20 записей только из курса.", delta:"+ 80 подписчиков · +30 к репутации · +20 записей"},
+    ]
+  }
+];
+
+let state = {day:0, subs:1240, trust:50, tests:0};
+let phase = 'choose';
+
+function startGame(){
+  state = {day:0, subs:1240, trust:50, tests:0};
+  showScreen('s-game');
+  loadDay();
+}
+
+function loadDay(){
+  const d = DAYS[state.day];
+  document.getElementById('g-title').textContent = d.title;
+  document.getElementById('g-subtitle').textContent = d.subtitle;
+  document.getElementById('g-phase').textContent = 'Выбери действие';
+  document.getElementById('prog').style.width = ((state.day/7)*100)+'%';
+  updateStats();
+  const sit = document.getElementById('g-situation');
+  sit.innerHTML = `<span class="tag">${d.tag}</span><p>${d.situation}</p>`;
+  const ch = document.getElementById('g-choices');
+  ch.innerHTML = '';
+  d.choices.forEach((c,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.innerHTML = `${c.text}<div class="desc">${c.desc}</div>`;
+    btn.onclick = ()=>applyChoice(i);
+    ch.appendChild(btn);
+  });
+}
+
+function applyChoice(i){
+  const d = DAYS[state.day];
+  const c = d.choices[i];
+  const prevS = state.subs, prevT = state.trust, prevR = state.tests;
+  state.subs = Math.max(0, state.subs + c.subs);
+  state.trust = Math.max(0, Math.min(100, state.trust + c.trust));
+  state.tests += Math.max(0, c.tests||0);
+
+  document.getElementById('r-title').textContent = d.title;
+  document.getElementById('r-sub').textContent = c.text;
+
+  const card = document.getElementById('r-card');
+  card.innerHTML = `<div class="result-card ${c.result}"><p>${c.msg}</p><div class="delta">${c.delta}</div></div>`;
+
+  document.getElementById('rs-subs').textContent = state.subs.toLocaleString();
+  document.getElementById('rs-trust').textContent = state.trust;
+  document.getElementById('rs-tests').textContent = state.tests;
+
+  const btn = document.getElementById('btn-next');
+  if(state.day >= 6){
+    btn.textContent = 'Смотреть итог →';
+  } else {
+    btn.textContent = 'Следующий день →';
+  }
+  showScreen('s-result');
+}
+
+function nextDay(){
+  state.day++;
+  if(state.day >= 7){
+    showEnd();
+  } else {
+    showScreen('s-game');
+    loadDay();
+  }
+}
+
+function showEnd(){
+  showScreen('s-end');
+  const score = state.tests;
+  let emoji, title, text, badge;
+  if(state.trust >= 80 && score >= 40){
+    emoji='🏆'; title='Легенда НКО';
+    text=`За неделю ты привлёк(ла) ${score} записей на тестирование и построил(а) канал с репутацией ${state.trust}/100. Команда просит тебя возглавить digital-направление.`;
+    badge='<div class="badge">Экспертный SMM</div>';
+  } else if(score >= 25){
+    emoji='⭐'; title='Хороший старт';
+    text=`${score} записей на тест — это реальные люди, которые узнают свой статус благодаря тебе. Есть над чем работать, но база есть.`;
+    badge='<div class="badge">Перспективный специалист</div>';
+  } else if(state.trust < 30){
+    emoji='😓'; title='Репутация пострадала';
+    text=`Канал вырос, но доверие аудитории — всего ${state.trust}/100. ${score} записей на тест. Нужно пересмотреть стратегию и восстановить отношения с сообществом.`;
+    badge='';
+  } else {
+    emoji='📈'; title='Растём дальше';
+    text=`${score} записей на тест и ${state.subs.toLocaleString()} подписчиков. Хорошая основа — теперь нужно конвертировать охват в доверие.`;
+    badge='';
+  }
+  document.getElementById('end-emoji').textContent = emoji;
+  document.getElementById('end-title').textContent = title;
+  document.getElementById('end-score').textContent = `${score} записей`;
+  document.getElementById('end-text').textContent = text;
+  document.getElementById('end-badge').innerHTML = badge;
+}
+
+function updateStats(){
+  document.getElementById('s-subs').textContent = state.subs.toLocaleString();
+  document.getElementById('s-trust').textContent = state.trust;
+  document.getElementById('s-tests').textContent = state.tests;
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function restartGame(){
+  showScreen('s-start');
+}
+</script>
